@@ -2,4 +2,3 @@
 Little console tool for search similar or duplicates from Images in folder
 
 USAGE: ./search_same.py --path ./{folder_with_images}/
-       /n./search_same.py --help
