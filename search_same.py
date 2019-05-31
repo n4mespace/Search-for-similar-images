@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
-''' USAGE: ./search_same.py --path ./{folder_with_images}/ '''
+''' 
+    USAGE: ./search_same.py --path ./{folder_with_images}/ 
+'''
 
 import sys
 import os
@@ -8,18 +10,24 @@ import math
 from PIL import Image, ImageChops
 import numpy as np
 
+# With multiprocessing it works 1.5x faster
+from multiprocessing.dummy import Pool as ThreadPool
+
 
 def main(argv):
     ''' Checking if images in folder are similar or duplicates '''
 
     path = _check_if_valid_path(argv)
+
     if path:
-        files = [path + "/" + i for i in os.listdir(path)]
-        k = 1
-        for file1 in files:
-            for file2 in files[k:]:
-                rmsdiff(file1, file2)
-            k += 1
+        files = np.asarray([path + "/" + i for i in os.listdir(path)])
+
+        for i in range(1, len(files) - 1):
+            pool = ThreadPool()
+            pool.map(lambda f1: rmsdiff(f1, files[i:][0]), files[i:])
+
+            pool.close()
+            pool.join()
 
 
 # Root-Mean-Square Difference 
@@ -36,7 +44,7 @@ def rmsdiff(file1: Image, file2: Image):
     file1 = file1.split("/")[-1]
     file2 = file2.split("/")[-1]
 
-    if rms <= 41: print(f"{file1} <=> {file2}")
+    if rms <= 41 and file1 != file2: print(f"{file1} <=> {file2}")
 
 
 def _check_if_valid_path(argv):
